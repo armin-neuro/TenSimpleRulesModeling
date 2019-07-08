@@ -31,40 +31,125 @@ mu  = [0.2 0.8];    % mean reward of bandits
 % number of repetitions for simulations
 Nrep = 110;
 
-% Model 1: Random responding
-for n = 1:Nrep
-    b = 0.5;
-    [a, r] = simulate_M1random_v1(T, mu, b);
-    sim(1).a(:,n) = a;
-    sim(1).r(:,n) = r;
+%% Model 1: Random responding
+bs = [0.1:0.2:1];
+figure(11)
+for paramidx = 1:length(bs)
+    b = bs(paramidx);
+    for n = 1:Nrep
+        [a, r] = simulate_M1random_v1(T, mu, b);
+        sim(1).a(:,n) = a;
+        sim(1).r(:,n) = r;
+    end
+    i = 1;
+    for n = 1:Nrep
+        sim(i).wsls(:,n) = analysis_WSLS_v1(sim(i).a(:,n)', sim(i).r(:,n)');
+    end
+    wsls(:,i) = nanmean(sim(i).wsls,2);
+    l11 = plot([0 1], wsls(:,i),'DisplayName',['b=' num2str(b)]);
+    hold on
+    ylim([0 1])
+    set(l11, 'marker', '.', 'markersize', 50, 'linewidth', 3)
+end
+legend('show');
+set(gca, 'xtick', [0 1], 'tickdir', 'out', 'fontsize', 18, 'xlim', [-0.1 1.1])
+
+%% Model 2: Win-stay-lose-shift
+epsilons = [0.1:0.2:1];
+figure(12)
+for paramidx = 1:length(epsilons)
+    epsilon = epsilons(paramidx);
+
+    for n = 1:Nrep
+        [a, r] = simulate_M2WSLS_v1(T, mu, epsilon);
+        sim(2).a(:,n) = a;
+        sim(2).r(:,n) = r;
+    end
+    i = 2;
+    for n = 1:Nrep
+        sim(i).wsls(:,n) = analysis_WSLS_v1(sim(i).a(:,n)', sim(i).r(:,n)');
+    end
+    wsls(:,i) = nanmean(sim(i).wsls,2);
+    l12 = plot([0 1], wsls(:,i),'DisplayName',['epsilon=' num2str(epsilon)]);
+    hold on
+    ylim([0 1])
+    set(l12, 'marker', '.', 'markersize', 50, 'linewidth', 3)
+    
 end
 
-% Model 2: Win-stay-lose-shift
-for n = 1:Nrep
-    epsilon = 0.1;
-    [a, r] = simulate_M2WSLS_v1(T, mu, epsilon);
-    sim(2).a(:,n) = a;
-    sim(2).r(:,n) = r;
-end
-% Model 3: Rescorla Wagner
-for n = 1:Nrep
-    alpha = 0.1;
-    beta = 5;
-    [a, r] = simulate_M3RescorlaWagner_v1(T, mu, alpha, beta);
-    sim(3).a(:,n) = a;
-    sim(3).r(:,n) = r;
+legend('show');
+set(gca, 'xtick', [0 1], 'tickdir', 'out', 'fontsize', 18, 'xlim', [-0.1 1.1])
+
+%% Model 3: Rescorla Wagner
+
+alphas = [0.1:0.2:1];
+betas = [1 2 5 10 20];
+figure(13)
+
+for paramidx1 = 1:length(alphas)
+    for paramidx2 = 1:length(betas)
+        alpha = alphas(paramidx1);
+        beta  = betas(paramidx2);
+        
+        for n = 1:Nrep
+            [a, r] = simulate_M3RescorlaWagner_v1(T, mu, alpha, beta);
+            sim(3).a(:,n) = a;
+            sim(3).r(:,n) = r;
+        end
+        
+        i = 3;
+        for n = 1:Nrep
+            sim(i).wsls(:,n) = analysis_WSLS_v1(sim(i).a(:,n)', sim(i).r(:,n)');
+        end
+        wsls(:,i) = nanmean(sim(i).wsls,2);
+        l13 = plot([0 1], wsls(:,i),'DisplayName',['alpha=' num2str(alpha) ' ,beta=' num2str(beta)]);
+        hold on
+        ylim([0 1])
+        set(l13, 'marker', '.', 'markersize', 50, 'linewidth', 3)
+        
+    end
 end
 
-% Model 4: Choice kernel
-for n = 1:Nrep
-    alpha_c = 0.1;
-    beta_c = 3;
-    [a, r] = simulate_M4ChoiceKernel_v1(T, mu, alpha_c, beta_c);
-    sim(4).a(:,n) = a;
-    sim(4).r(:,n) = r;
+legend('show');
+set(gca, 'xtick', [0 1], 'tickdir', 'out', 'fontsize', 18, 'xlim', [-0.1 1.1])
+
+
+%% Model 4: Choice kernel
+
+alphas = [0.1:0.2:1];
+betas = [1 2 5 10 20];
+figure(14)
+
+for paramidx1 = 1:length(alphas)
+    for paramidx2 = 1:length(betas)
+        alpha_c = alphas(paramidx1);
+        beta_c  = betas(paramidx2);
+        
+        for n = 1:Nrep
+            [a, r] = simulate_M4ChoiceKernel_v1(T, mu, alpha_c, beta_c);
+            sim(4).a(:,n) = a;
+            sim(4).r(:,n) = r;
+        end
+        
+        i = 4;
+        for n = 1:Nrep
+            sim(i).wsls(:,n) = analysis_WSLS_v1(sim(i).a(:,n)', sim(i).r(:,n)');
+        end
+        wsls(:,i) = nanmean(sim(i).wsls,2);
+        l14 = plot([0 1], wsls(:,i),'DisplayName',['alpha=' num2str(alpha_c) ' ,beta=' num2str(beta_c)]);
+        hold on
+        ylim([0 1])
+        set(l14, 'marker', '.', 'markersize', 50, 'linewidth', 3)
+        
+    end
 end
 
-% Model 5: Rescorla-Wagner + choice kernel
+legend('show');
+set(gca, 'xtick', [0 1], 'tickdir', 'out', 'fontsize', 18, 'xlim', [-0.1 1.1])
+
+
+
+%% Model 5: Rescorla-Wagner + choice kernel
 for n = 1:Nrep
     alpha = 0.1;
     beta = 5;
@@ -77,26 +162,32 @@ end
 
 
 %% win-stay-lose-shift analysis
-for i = 1:length(sim)
-    for n = 1:Nrep
-        sim(i).wsls(:,n) = analysis_WSLS_v1(sim(i).a(:,n)', sim(i).r(:,n)');
-    end
-    wsls(:,i) = nanmean(sim(i).wsls,2);
-end
+% for i = 1:length(sim)
+%     for n = 1:Nrep
+%         sim(i).wsls(:,n) = analysis_WSLS_v1(sim(i).a(:,n)', sim(i).r(:,n)');
+%     end
+%     wsls(:,i) = nanmean(sim(i).wsls,2);
+% end
+
+% i = 1;
+% for n = 1:Nrep
+%     sim(i).wsls(:,n) = analysis_WSLS_v1(sim(i).a(:,n)', sim(i).r(:,n)');
+% end
+% wsls(:,i) = nanmean(sim(i).wsls,2);
 
 %% Plot WSLS behavior for all models
-figure(1); clf; hold on;
-l = plot([0 1], wsls);
-ylim([0 1])
-set(l, 'marker', '.', 'markersize', 50, 'linewidth', 3)
-
-
-legend({'M1: random' 'M2: WSLS' 'M3: RW' 'M4: CK' 'M5: RW+CK'}, ...
-    'location', 'southeast')
-xlabel('previous reward')
-ylabel('probability of staying')
-
-set(gca, 'xtick', [0 1], 'tickdir', 'out', 'fontsize', 18, 'xlim', [-0.1 1.1])
+% figure(1); clf; hold on;
+% l = plot([0 1], wsls);
+% ylim([0 1])
+% set(l, 'marker', '.', 'markersize', 50, 'linewidth', 3)
+% 
+% 
+% legend({'M1: random' 'M2: WSLS' 'M3: RW' 'M4: CK' 'M5: RW+CK'}, ...
+%     'location', 'southeast')
+% xlabel('previous reward')
+% ylabel('probability of staying')
+% 
+% set(gca, 'xtick', [0 1], 'tickdir', 'out', 'fontsize', 18, 'xlim', [-0.1 1.1])
 
 
 %% p(correct) analysis
@@ -174,4 +265,4 @@ addABCs(ax(1:2), [-0.06 0.09], 32)
 
 
 %% save resulting figure
-saveFigurePdf(gcf, './Figures/Figure2')
+% saveFigurePdf(gcf, './Figures/Figure2')
